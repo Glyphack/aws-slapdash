@@ -13,6 +13,23 @@ any AWS console pages with just a few key strokes.
 
 </div>
 
+- [AWS Slapdash](#aws-slapdash)
+  - [What is Slapdash?](#what-is-slapdash)
+  - [Why Do I Need It?](#why-do-i-need-it)
+  - [Installation](#installation)
+    - [Step 0: Prerequisites](#step-0-prerequisites)
+    - [Step 1: Install AWS Slapdash](#step-1-install-aws-slapdash)
+    - [Step 2: Add commands to Slapdash](#step-2-add-commands-to-slapdash)
+    - [Step 3: Configure the AWS profile](#step-3-configure-the-aws-profile)
+  - [Usage & Configuration](#usage--configuration)
+    - [Set AWS Profile & Region](#set-aws-profile--region)
+    - [AWS Vault](#aws-vault)
+  - [Features](#features)
+    - [Cloud Formation](#cloud-formation)
+    - [Dynamo DB](#dynamo-db)
+    - [EC2](#ec2)
+    - [Secrets Manager](#secrets-manager)
+
 ## What is Slapdash?
 
 [Slapdash](https://slapdash.com/home) is a command bar widget that can be pulled
