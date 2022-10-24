@@ -1,0 +1,149 @@
+<!-- markdownlint-configure-file {
+  "MD033": false,
+  "MD041": false
+} -->
+<div align="center">
+
+# AWS Slapdash
+
+AWS Slapdash is a faster way to browse your **AWS Resources**, powered by Slapdash.
+
+It integrates with Slapdash to enable to jump to any AWS resource without loading
+any AWS console pages with just a few key strokes.
+
+</div>
+
+## What is Slapdash?
+
+[Slapdash](https://slapdash.com/home) is a command bar widget that can be pulled
+up anywhere, and you can search through all of your applications.
+
+## Why Do I Need It?
+
+Navigating through AWS console can be time consuming, imagine you want to check
+you EC2 instance status and you have to navigate through 1 or 2 pages to get there.
+
+What if you could get the page you want in AWS without having to navigate from
+the console there and load all those pages?
+This is what this project helps you to achieve.
+
+## Installation
+
+### Step 0: Prerequisites
+
+1. Create an account and download [Slapdash](https://slapdash.com/home)
+2. Install Python (+3.7). You can use [Pyenv](https://github.com/pyenv/pyenv).
+
+### Step 1: Install AWS Slapdash
+
+Project depends on `boto3` library from AWS to work, install it with
+
+```bash
+pip install boto3
+```
+
+Then install the package with:
+
+```bash
+pip install aws-slapdash
+```
+
+Then copy the path that pip installed the package with command `pip show aws-slapdash`.
+This will be needed for next step.
+
+### Step 2: Add commands to Slapdash
+
+Open your slapdash command bar, the default shortcut is `ctrl+j`.
+Type in "new command", press enter then select the "Local Command" option.
+
+In the opened page specify the script path by navigating to the path
+you got in the last step and choosing the script from it's name.
+
+Select a name for the command this can be the service full name like Secrets Manager.
+
+Choose an alias so you can call this command with a shorter name, like "secrets".
+
+Optionally choose a keyboard shortcut for the command.
+
+Repeat this process for all the services you need.
+
+### Step 3: Configure the AWS profile
+
+Add the script `configure.py` as explained in step 2 to Slapdash.
+
+Run it from Slapdash and configure the app.
+You can read about configuration in the below section.
+
+## Usage & Configuration
+
+Configuration for all the scripts are under `~/.config/aws_slapdash/config.json`.
+
+There is a configuration script named `configure.py`,
+you can import this config to your slapdash and configure from slapdash itself.
+
+### Set AWS Profile & Region
+
+use these keys in the config file(or use the config command):
+
+```json
+{
+  "profile": "profile_name",
+  "region": "region_name"
+}
+```
+
+### AWS Vault
+
+You can enable the AWS vault integration with setting:
+
+```json
+{
+  "awsVault": true
+}
+```
+
+After this the commands will try to switch the profile using AWS vault command.
+
+Since AWS vault might asks for your password when you run a command you can
+[longer the remember password duration](https://github.com/99designs/aws-vault/blob/master/USAGE.md#keychain)
+for AWS vault longer so you don't have to
+type it every time.
+
+## Features
+
+Here is a list of AWS Services supported.
+
+All of the features are read-only commands, meaning that you cannot
+create or destroy something with them.
+
+### Cloud Formation
+
+Displays all active cloud formation stacks and their latest status.
+Opens the stack page upon select.
+
+### Dynamo DB
+
+Displays all Dynamo DB tables.
+Opens the table page upon select.
+
+The following features are available on each table:
+
+- Open Query page for that table
+- View and copy: table size, item count
+
+### EC2
+
+Displays all EC2 instances and their current state.
+
+The following features are available on each instance:
+
+- View and copy: Public DNS name - connect with SSH command
+
+### Secrets Manager
+
+Displays all secrets names. Opens the secret page upon select.
+
+The following features are available on each secret:
+
+- Copy: Secret value
+- View and Copy: Secret name
