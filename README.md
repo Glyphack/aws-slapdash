@@ -6,6 +6,8 @@
 
 # AWS Slapdash
 
+[![PyPI version](https://badge.fury.io/py/aws-slapdash.svg)](https://badge.fury.io/py/aws-slapdash)
+
 AWS Slapdash is a faster way to browse your **AWS Resources**, powered by Slapdash.
 
 It integrates with Slapdash to enable to jump to any AWS resource without loading
@@ -73,22 +75,20 @@ This will be needed for next step.
 Open your slapdash command bar, the default shortcut is `ctrl+j`.
 Type in "new command", press enter then select the "Local Command" option.
 
-In the opened page specify the script path by navigating to the path
+1. specify the script path by navigating to the path
 you got in the last step and choosing the script from it's name.
-
-Select a name for the command this can be the service full name like Secrets Manager.
-
-Choose an alias so you can call this command with a shorter name, like "secrets".
-
-Optionally choose a keyboard shortcut for the command.
+For example "secretsmanager.py" is for using Secrets Manager service.
+2. Select a name for the command this can be the service full name like Secrets Manager.
+3. Choose an alias so you can call this command with a shorter name, like "secrets".
+4. Optionally choose a keyboard shortcut for the command.
 
 Repeat this process for all the services you need.
 
 ### Step 3: Configure the AWS profile
 
-Add the script `configure.py` as explained in step 2 to Slapdash.
+Add the script `configure.py` as explained in [step 2](#step-2-add-commands-to-slapdash).
+Run configure command from Slapdash and configure the app.
 
-Run it from Slapdash and configure the app.
 You can read about configuration in the below section.
 
 ## Usage & Configuration
@@ -128,10 +128,11 @@ type it every time.
 
 ## Features
 
-Here is a list of AWS Services supported.
+Here is a list of supported AWS services.
 
 All of the features are read-only commands, meaning that you cannot
-create or destroy something with them.
+create or destroy something with them,
+ which keeps you safe from shooting yourself in the foot.
 
 ### Cloud Formation
 
