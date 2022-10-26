@@ -120,6 +120,10 @@ You can enable the AWS vault integration with setting:
 ```
 
 After this the commands will try to switch the profile using AWS vault command.
+This means that if you try to execute a command when AWS profile is not set,
+The command will try to authenticate with AWS vault and you will be navigated to
+AWS for that.
+After the first authentication it will work until the tokens expire.
 
 Since AWS vault might asks for your password when you run a command you can
 [longer the remember password duration](https://github.com/99designs/aws-vault/blob/master/USAGE.md#keychain)
