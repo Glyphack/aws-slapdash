@@ -4,6 +4,8 @@
 } -->
 <div align="center">
 
+![](https://user-images.githubusercontent.com/20788334/198634755-cff2524b-d4a0-4b0c-98fd-bc1a139bb5b0.jpg)
+
 # AWS Slapdash
 
 [![PyPI version](https://badge.fury.io/py/aws-slapdash.svg)](https://badge.fury.io/py/aws-slapdash)
