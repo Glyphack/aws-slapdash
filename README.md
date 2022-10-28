@@ -4,7 +4,7 @@
 } -->
 <div align="center">
 
-![](https://user-images.githubusercontent.com/20788334/198634755-cff2524b-d4a0-4b0c-98fd-bc1a139bb5b0.jpg)
+<img src="https://user-images.githubusercontent.com/20788334/198634875-096afc35-ce49-4b8e-815d-9d5f71ac7c90.png" width="200" height="100"/>
 
 # AWS Slapdash
 
