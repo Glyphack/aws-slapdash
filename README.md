@@ -15,6 +15,8 @@ AWS Slapdash is a faster way to browse your **AWS Resources**, powered by Slapda
 It integrates with Slapdash to enable to jump to any AWS resource without loading
 any AWS console pages with just a few key strokes.
 
+<img src="https://user-images.githubusercontent.com/20788334/198823323-392f76c7-3161-40bd-a426-0d4490a62601.gif" width="75%" height="75%"/>
+
 </div>
 
 - [AWS Slapdash](#aws-slapdash)
