@@ -35,6 +35,7 @@ any AWS console pages with just a few key strokes.
     - [Dynamo DB](#dynamo-db)
     - [EC2](#ec2)
     - [Secrets Manager](#secrets-manager)
+    - [ECS](#ecs)
 
 ## What is Slapdash?
 
@@ -173,3 +174,12 @@ The following features are available on each secret:
 
 - Copy: Secret value
 - View and Copy: Secret name
+
+### ECS
+
+Displays all ECS clusters. Opens cluster page upon select.
+
+The following features are available on each cluster:
+
+- Create new task
+- View any task logs
