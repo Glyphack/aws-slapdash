@@ -1,11 +1,13 @@
 #!python3
 # -*- coding: utf-8 -*-
 import argparse
+
+# generated-begin
 import dataclasses
 import json
 import os
 import subprocess
-from typing import Optional
+import typing
 
 import boto3
 
@@ -24,7 +26,15 @@ class Config:
     aws_vault: bool
 
 
-def load_config():
+def slapdash_show_message_and_exit(msg: str) -> None:
+    """
+    Useful for showing error messages
+    """
+    print(json.dumps({"view": msg}))
+    exit()
+
+
+def load_config() -> Config:
     config_path = os.path.join(
         os.environ.get("APPDATA")
         or os.environ.get("XDG_CONFIG_HOME")
@@ -44,10 +54,13 @@ def load_config():
 config = load_config()
 
 
-def create_session(config: Config):
+def create_session(config: Config) -> boto3.session.Session:
     envvars = subprocess.check_output(
         ["aws-vault", "exec", config.aws_profile, "--", "env"]
     )
+    aws_access_key_id = None
+    aws_secret_access_key = None
+    aws_session_token = None
     for envline in envvars.split(b"\n"):
         line = envline.decode("utf8")
         eqpos = line.find("=")
@@ -61,6 +74,14 @@ def create_session(config: Config):
             aws_secret_access_key = v
         if k == "AWS_SESSION_TOKEN":
             aws_session_token = v
+    if (
+        aws_session_token is None
+        or aws_secret_access_key is None
+        or aws_access_key_id is None
+    ):
+        slapdash_show_message_and_exit(
+            f"could not authenticate with aws-vault, response: {envvars}"
+        )
 
     return boto3.Session(
         aws_access_key_id,
@@ -71,7 +92,7 @@ def create_session(config: Config):
 
 
 session = create_session(config)
-
+# generated-end
 
 client = session.client("ec2")
 resource = session.resource("ec2")
@@ -81,7 +102,7 @@ BASE_PATH = f"https://{config.region}.console.aws.amazon.com"
 TITLE_FORMAT = "{instance_name} | {instance_id} | {instance_state} "
 
 
-def get_items_response(instance_id: Optional[str] = None):
+def get_items_response(instance_id: typing.Optional[str] = None):
     if not instance_id:
         return get_default_list_view()
     instance = resource.Instance(instance_id)
