@@ -99,6 +99,11 @@ resource = session.resource("ec2")
 
 
 BASE_PATH = f"https://{config.region}.console.aws.amazon.com"
+EC2_SSM_CONNECT = (
+    f"{BASE_PATH}/systems-manager/session-manager/"
+    "{instance_id}"
+    f"?region={config.region}#"
+)
 TITLE_FORMAT = "{instance_name} | {instance_id} | {instance_state} "
 
 
@@ -109,6 +114,13 @@ def get_items_response(instance_id: typing.Optional[str] = None):
     # Could not find an easy way to get key type
     key_type = "pem"
     return [
+        {
+            "title": "Connect Via SSM",
+            "action": {
+                "type": Actions.OPEN_URL,
+                "url": EC2_SSM_CONNECT.format(instance_id=instance_id),
+            },
+        },
         {
             "title": "Copy public DNS name",
             "action": {
@@ -148,7 +160,7 @@ def get_default_list_view():
                     instance_name=name, instance_id=id, instance_state=state
                 ),
                 "action": {
-                    "type": "open-url",
+                    "type": Actions.OPEN_URL,
                     "url": (
                         f"{BASE_PATH}/ec2/home?region=eu-west-1"
                         f"#InstanceDetails:instanceId={id}"
