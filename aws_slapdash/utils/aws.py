@@ -2,16 +2,9 @@ import dataclasses
 import json
 import os
 import subprocess
-import typing
 
 import boto3
-
-
-class Actions:
-    SHOW_TOAST = "show-toast"
-    COPY = "copy"
-    ADD_PARAM = "add-param"
-    OPEN_URL = "open-url"
+from utils.slapdash import slapdash_show_message_and_exit
 
 
 @dataclasses.dataclass
@@ -19,14 +12,6 @@ class Config:
     aws_profile: str
     region: str
     aws_vault: bool
-
-
-def slapdash_show_message_and_exit(msg: str) -> None:
-    """
-    Useful for showing error messages
-    """
-    print(json.dumps({"view": msg}))
-    exit()
 
 
 def load_config() -> Config:
@@ -46,10 +31,7 @@ def load_config() -> Config:
         return config
 
 
-config = load_config()
-
-
-def create_session(config: Config) -> boto3.session.Session:
+def create_session(config: Config = load_config()) -> boto3.session.Session:
     envvars = subprocess.check_output(
         ["aws-vault", "exec", config.aws_profile, "--", "env"]
     )
@@ -84,6 +66,3 @@ def create_session(config: Config) -> boto3.session.Session:
         aws_session_token,
         config.region,
     )
-
-
-session = create_session(config)

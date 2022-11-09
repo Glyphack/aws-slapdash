@@ -1,162 +1,77 @@
-#!python3
-# -*- coding: utf-8 -*-
 import argparse
-
-# generated-begin
-import dataclasses
 import json
-import os
-import subprocess
-import typing
 
-import boto3
-
-
-class Actions:
-    SHOW_TOAST = "show-toast"
-    COPY = "copy"
-    ADD_PARAM = "add-param"
-    OPEN_URL = "open-url"
+from utils.aws import create_session
+from utils.command import AWSServiceCommand
+from utils.slapdash import Actions
 
 
-@dataclasses.dataclass
-class Config:
-    aws_profile: str
-    region: str
-    aws_vault: bool
+class CloudformationCommand(AWSServiceCommand):
+    def service_name(self):
+        return "Cloud Formation"
 
-
-def slapdash_show_message_and_exit(msg: str) -> None:
-    """
-    Useful for showing error messages
-    """
-    print(json.dumps({"view": msg}))
-    exit()
-
-
-def load_config() -> Config:
-    config_path = os.path.join(
-        os.environ.get("APPDATA")
-        or os.environ.get("XDG_CONFIG_HOME")
-        or os.path.join(os.environ["HOME"], ".config"),
-        "aws_slapdash",
-    )
-    with open(os.path.join(config_path, "config.json")) as json_file:
-        config_source = json.load(json_file)
-        config = Config(
-            aws_profile=config_source["profile"],
-            region=config_source["region"],
-            aws_vault=config_source["awsVault"],
-        )
-        return config
-
-
-config = load_config()
-
-
-def create_session(config: Config) -> boto3.session.Session:
-    envvars = subprocess.check_output(
-        ["aws-vault", "exec", config.aws_profile, "--", "env"]
-    )
-    aws_access_key_id = None
-    aws_secret_access_key = None
-    aws_session_token = None
-    for envline in envvars.split(b"\n"):
-        line = envline.decode("utf8")
-        eqpos = line.find("=")
-        if eqpos < 4:
-            continue
-        k = line[0:eqpos]
-        v = line[eqpos + 1 :]
-        if k == "AWS_ACCESS_KEY_ID":
-            aws_access_key_id = v
-        if k == "AWS_SECRET_ACCESS_KEY":
-            aws_secret_access_key = v
-        if k == "AWS_SESSION_TOKEN":
-            aws_session_token = v
-    if (
-        aws_session_token is None
-        or aws_secret_access_key is None
-        or aws_access_key_id is None
-    ):
-        slapdash_show_message_and_exit(
-            f"could not authenticate with aws-vault, response: {envvars}"
+    def service_url(self):
+        return (
+            self.aws_console_base_url
+            + f"cloudformation/home?region={self.config.region}#/stacks/"
         )
 
-    return boto3.Session(
-        aws_access_key_id,
-        aws_secret_access_key,
-        aws_session_token,
-        config.region,
-    )
-
-
-session = create_session(config)
-# generated-end
-BASE_PATH = f"https://{config.region}.console.aws.amazon.com/"
-STACK_DETAILS_URL = (
-    BASE_PATH
-    + f"cloudformation/home?region={config.region}#/stacks/"
-    + "stackinfo?filteringStatus=active&filteringText=&viewNested=true"
-    + "&hideStacks=false&stackId={stack_id}"
-)
-TITLE_FORMAT = "{stack_name} | {stack_status}"
-
-client = session.client("cloudformation")
-
-
-def list_stacks():
-    list_stacks_resp = client.list_stacks()
-    stacks = list_stacks_resp["StackSummaries"]
-    while list_stacks_resp.get("NextToken") is not None:
-        list_stacks_resp = client.list_stacks(
-            NextToken=list_stacks_resp["NextToken"]
+    def serve_command(self, arg_parser: argparse.ArgumentParser):
+        arg_parser.add_argument(
+            "--stack-id",
         )
-        stacks.extend(list_stacks_resp["StackSummaries"])
-    active_stacks = filter(
-        lambda s: s.get("DeletionTime") is None,
-        stacks,
-    )
-    resp = []
-    for stack in active_stacks:
-        stack_name = stack["StackName"]
-        stack_status = stack["StackStatus"]
-        stack_id = stack["StackId"]
-        resp.append(
-            {
-                "title": TITLE_FORMAT.format(
-                    stack_name=stack_name, stack_status=stack_status
-                ),
-                "action": {
-                    "type": "open-url",
-                    "url": STACK_DETAILS_URL.format(stack_id=stack_id),
-                },
-            }
-        )
-    return resp
-
-
-def serve_cloudformation_command(stack_name):
-    if not stack_name:
-        return list_stacks()
-
-
-def serve_command(get_response_func):
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--stack-id",
-    )
-    _ = parser.parse_args()
-    print(
-        json.dumps(
-            {
-                "view": {
-                    "type": "list",
-                    "options": get_response_func(None),
+        args = arg_parser.parse_args()
+        print(
+            json.dumps(
+                {
+                    "view": {
+                        "type": "list",
+                        "options": self.serve_cloudformation(args.stack_id),
+                    }
                 }
-            }
+            )
         )
-    )
 
+    def serve_cloudformation(self, stack_name):
+        if not stack_name:
+            return self.list_stacks()
 
-serve_command(serve_cloudformation_command)
+    def list_stacks(self):
+        STACK_DETAILS_URL = (
+            self.aws_console_base_url
+            + f"cloudformation/home?region={self.config.region}#/stacks/"
+            + "stackinfo?filteringStatus=active&filteringText=&viewNested=true"
+            + "&hideStacks=false&stackId={stack_id}"
+        )
+        TITLE_FORMAT = "{stack_name} | {stack_status}"
+
+        session = create_session()
+        client = session.client("cloudformation")
+        list_stacks_resp = client.list_stacks()
+        stacks = list_stacks_resp["StackSummaries"]
+        while list_stacks_resp.get("NextToken") is not None:
+            list_stacks_resp = client.list_stacks(
+                NextToken=list_stacks_resp["NextToken"]
+            )
+            stacks.extend(list_stacks_resp["StackSummaries"])
+        active_stacks = filter(
+            lambda s: s.get("DeletionTime") is None,
+            stacks,
+        )
+        resp = []
+        for stack in active_stacks:
+            stack_name = stack["StackName"]
+            stack_status = stack["StackStatus"]
+            stack_id = stack["StackId"]
+            resp.append(
+                {
+                    "title": TITLE_FORMAT.format(
+                        stack_name=stack_name, stack_status=stack_status
+                    ),
+                    "action": {
+                        "type": Actions.OPEN_URL,
+                        "url": STACK_DETAILS_URL.format(stack_id=stack_id),
+                    },
+                }
+            )
+        return resp

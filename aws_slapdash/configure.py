@@ -1,21 +1,9 @@
-#!python3
-# -*- coding: utf-8 -*-
-
 import argparse
-import dataclasses
 import json
 import os
 import pathlib
-import sys
 
-import boto3
-
-
-@dataclasses.dataclass
-class Config:
-    aws_profile: str
-    region: str
-    aws_vault: bool
+from utils.aws import Config
 
 
 def get_config_path():
@@ -52,27 +40,25 @@ def store_config(config: Config):
         json_file.write(json.dumps(config_json))
 
 
-def serve_config_command():
-    if len(sys.argv) > 1:
-        parser = argparse.ArgumentParser()
-        parser.add_argument(
-            "--profile",
-        )
-        parser.add_argument(
-            "--region",
-        )
-        parser.add_argument(
-            "--use-aws-vault", action="store", default=False, type=bool
-        )
-        args = parser.parse_args()
+def serve_config_command(arg_parser: argparse.ArgumentParser):
+    arg_parser.add_argument(
+        "--profile",
+    )
+    arg_parser.add_argument(
+        "--region",
+    )
+    arg_parser.add_argument(
+        "--use-aws-vault", action="store", default=False, type=bool
+    )
+    args = arg_parser.parse_args()
+    if args.profile and args.region and args.use_aws_vault:
         config = Config(args.profile, args.region, args.use_aws_vault)
         store_config(config)
 
-    else:
-        try:
-            config = load_config()
-        except FileNotFoundError:
-            config = Config("", "", False)
+    try:
+        config = load_config()
+    except FileNotFoundError:
+        config = Config("", "", False)
 
     print(
         json.dumps(
@@ -123,6 +109,3 @@ def serve_config_command():
             }
         )
     )
-
-
-serve_config_command()

@@ -1,168 +1,93 @@
-#!python3
-# -*- coding: utf-8 -*-
-import argparse
-
-# generated-begin
-import dataclasses
 import json
-import os
-import subprocess
-import typing
+from argparse import ArgumentParser
+from typing import Optional
 
-import boto3
+from utils.slapdash import Actions
 
-
-class Actions:
-    SHOW_TOAST = "show-toast"
-    COPY = "copy"
-    ADD_PARAM = "add-param"
-    OPEN_URL = "open-url"
+from aws_slapdash.utils.aws import create_session
+from aws_slapdash.utils.command import AWSServiceCommand
 
 
-@dataclasses.dataclass
-class Config:
-    aws_profile: str
-    region: str
-    aws_vault: bool
+class SecretsManagerCommand(AWSServiceCommand):
+    def service_name(self):
+        return "Secrets Manager"
 
+    def service_url(self):
+        return f"{self.aws_console_base_url}/secretsmanager/secret"
 
-def slapdash_show_message_and_exit(msg: str) -> None:
-    """
-    Useful for showing error messages
-    """
-    print(json.dumps({"view": msg}))
-    exit()
-
-
-def load_config() -> Config:
-    config_path = os.path.join(
-        os.environ.get("APPDATA")
-        or os.environ.get("XDG_CONFIG_HOME")
-        or os.path.join(os.environ["HOME"], ".config"),
-        "aws_slapdash",
-    )
-    with open(os.path.join(config_path, "config.json")) as json_file:
-        config_source = json.load(json_file)
-        config = Config(
-            aws_profile=config_source["profile"],
-            region=config_source["region"],
-            aws_vault=config_source["awsVault"],
+    def serve_command(self, arg_parser: ArgumentParser):
+        arg_parser.add_argument(
+            "--secret-name",
         )
-        return config
+        args = arg_parser.parse_args()
 
-
-config = load_config()
-
-
-def create_session(config: Config) -> boto3.session.Session:
-    envvars = subprocess.check_output(
-        ["aws-vault", "exec", config.aws_profile, "--", "env"]
-    )
-    aws_access_key_id = None
-    aws_secret_access_key = None
-    aws_session_token = None
-    for envline in envvars.split(b"\n"):
-        line = envline.decode("utf8")
-        eqpos = line.find("=")
-        if eqpos < 4:
-            continue
-        k = line[0:eqpos]
-        v = line[eqpos + 1 :]
-        if k == "AWS_ACCESS_KEY_ID":
-            aws_access_key_id = v
-        if k == "AWS_SECRET_ACCESS_KEY":
-            aws_secret_access_key = v
-        if k == "AWS_SESSION_TOKEN":
-            aws_session_token = v
-    if (
-        aws_session_token is None
-        or aws_secret_access_key is None
-        or aws_access_key_id is None
-    ):
-        slapdash_show_message_and_exit(
-            f"could not authenticate with aws-vault, response: {envvars}"
+        print(
+            json.dumps(
+                {
+                    "view": {
+                        "type": "list",
+                        "options": self.serve_secrets_manager_command(
+                            args.secret_name
+                        ),
+                    }
+                }
+            )
         )
 
-    return boto3.Session(
-        aws_access_key_id,
-        aws_secret_access_key,
-        aws_session_token,
-        config.region,
-    )
-
-
-session = create_session(config)
-# generated-end
-
-client = session.client("secretsmanager")
-
-
-BASE_PATH = f"https://{config.region}.console.aws.amazon.com"
-SECRET_DETAILS_URL = BASE_PATH + "/secretsmanager/secret?name={secret_name}"
-TITLE_FORMAT = "{secret_name}"
-
-
-def get_items_response(secret_name: typing.Optional[str] = None):
-    if not secret_name:
-        return get_default_list_view()
-    secret_value = client.get_secret_value(SecretId=secret_name)[
-        "SecretString"
-    ]
-    return [
-        {
-            "title": "Copy secret name",
-            "action": {
-                "type": Actions.COPY,
-                "value": secret_name,
-            },
-        },
-        {
-            "title": "Copy secret",
-            "action": {
-                "type": Actions.COPY,
-                "value": secret_value,
-            },
-        },
-    ]
-
-
-def get_default_list_view():
-    secrets = client.list_secrets()
-    resp = []
-    for secret in secrets["SecretList"]:
-        name = secret["Name"]
-        resp.append(
+    def serve_secrets_manager_command(self, secret_name: Optional[str] = None):
+        session = create_session()
+        client = session.client("secretsmanager")
+        if not secret_name:
+            return self.get_list_secrets_view(client)
+        secret_value = client.get_secret_value(SecretId=secret_name)[
+            "SecretString"
+        ]
+        return [
             {
-                "title": TITLE_FORMAT.format(secret_name=name),
+                "title": "Copy secret name",
                 "action": {
-                    "type": "open-url",
-                    "url": SECRET_DETAILS_URL.format(secret_name=name),
+                    "type": Actions.COPY,
+                    "value": secret_name,
                 },
-                "moveAction": {
-                    "type": "add-param",
-                    "name": "secret-name",
-                    "value": name,
+            },
+            {
+                "title": "Copy secret",
+                "action": {
+                    "type": Actions.COPY,
+                    "value": secret_value,
                 },
-            }
+            },
+        ]
+
+    def get_list_secrets_view(self, client):
+        list_secrets_resp = client.list_secrets()
+        secrets = list_secrets_resp["SecretList"]
+        while list_secrets_resp.get("NextToken"):
+            list_secrets_resp = client.list_secrets(
+                NextToken=list_secrets_resp["NextToken"]
+            )
+            secrets.extend(list_secrets_resp["SecretList"])
+        resp = []
+
+        SECRET_DETAILS_URL = (
+            self.aws_console_base_url
+            + "/secretsmanager/secret?name={secret_name}"
         )
-    return resp
-
-
-parser = argparse.ArgumentParser(description="Manage Ec2 instances")
-parser.add_argument(
-    "--secret-name",
-    help="Id of instance to manage",
-)
-args = parser.parse_args()
-secret_name = args.secret_name
-
-print(
-    json.dumps(
-        {
-            "view": {
-                "type": "list",
-                "options": get_items_response(secret_name),
-            }
-        }
-    )
-)
+        TITLE_FORMAT = "{secret_name}"
+        for secret in secrets["SecretList"]:
+            name = secret["Name"]
+            resp.append(
+                {
+                    "title": TITLE_FORMAT.format(secret_name=name),
+                    "action": {
+                        "type": "open-url",
+                        "url": SECRET_DETAILS_URL.format(secret_name=name),
+                    },
+                    "moveAction": {
+                        "type": "add-param",
+                        "name": "secret-name",
+                        "value": name,
+                    },
+                }
+            )
+        return resp
