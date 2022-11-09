@@ -60,14 +60,6 @@ This is what this project helps you to achieve.
 
 ### Step 1: Install AWS Slapdash
 
-Project depends on `boto3` library from AWS to work, install it with
-
-```bash
-pip install boto3
-```
-
-Then install the package with:
-
 ```bash
 pip install aws-slapdash
 ```
@@ -81,20 +73,16 @@ Open your slapdash command bar, the default shortcut is `ctrl+j`.
 Type in "new command", press enter then select the "Local Command" option.
 
 1. specify the script path by navigating to the path
-you got in the last step and choosing the script from it's name.
-For example "secretsmanager.py" is for using Secrets Manager service.
-2. Select a name for the command this can be the service full name like Secrets Manager.
-3. Choose an alias so you can call this command with a shorter name, like "secrets".
-4. Optionally choose a keyboard shortcut for the command.
-
-Repeat this process for all the services you need.
+   you got in the last step and choose the `aws.py` script.
+2. Select a name for the command e.g. aws.
+3. Optionally choose a keyboard shortcut for the command.
 
 ### Step 3: Configure the AWS profile
 
-Add the script `configure.py` as explained in [step 2](#step-2-add-commands-to-slapdash).
-Run configure command from Slapdash and configure the app.
+Run the slapdash command with `ctrl+j` and then executing the command you imported.
+Then select configure option by pressing Tab on it, Fill the AWS account and region.
 
-You can read about configuration in the below section.
+For more info on the Configuration read the configuration section.
 
 ## Usage & Configuration
 
@@ -141,7 +129,7 @@ Here is a list of supported AWS services.
 
 All of the features are read-only commands, meaning that you cannot
 create or destroy something with them,
- which keeps you safe from shooting yourself in the foot.
+which keeps you safe from shooting yourself in the foot.
 
 ### Cloud Formation
 
