@@ -13,7 +13,7 @@ class SecretsManagerCommand(AWSServiceCommand):
         return "Secrets Manager"
 
     def service_url(self):
-        return f"{self.aws_console_base_url}/secretsmanager/secret"
+        return f"{self.aws_console_base_url}secretsmanager/secret"
 
     def serve_command(self, arg_parser: ArgumentParser):
         arg_parser.add_argument(

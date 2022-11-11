@@ -34,7 +34,7 @@ class Ec2Command(AWSServiceCommand):
         )
 
     def service_url(self):
-        return f"{self.aws_console_base_url}/ec2/home"
+        return f"{self.aws_console_base_url}ec2/home"
 
     @property
     def aws_console_base_url(self) -> str:
@@ -48,7 +48,7 @@ class Ec2Command(AWSServiceCommand):
             return self.list_ec2_instances(client)
         instance = resource.Instance(instance_id)
         EC2_SSM_CONNECT = (
-            f"{self.aws_console_base_url}/systems-manager/session-manager/"
+            f"{self.aws_console_base_url}systems-manager/session-manager/"
             "{instance_id}"
             f"?region={self.config.region}#"
         )
