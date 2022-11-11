@@ -74,7 +74,7 @@ class SecretsManagerCommand(AWSServiceCommand):
             + "/secretsmanager/secret?name={secret_name}"
         )
         TITLE_FORMAT = "{secret_name}"
-        for secret in secrets["SecretList"]:
+        for secret in secrets:
             name = secret["Name"]
             resp.append(
                 {
