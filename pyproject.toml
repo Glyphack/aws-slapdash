@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "aws-slapdash"
-version = "0.3.0"
+version = "0.3.1"
 description = "Slapdash commands for interacting with AWS account"
 authors = ["glyphack <sh.hooshyari@gmail.com>"]
 license = "GPLv3"
