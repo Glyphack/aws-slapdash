@@ -8,7 +8,7 @@ from utils.slapdash import Actions
 
 class DynamoDBCommand(AWSServiceCommand):
     def service_name(self):
-        return "Cloud Formation"
+        return "DynamoDB"
 
     def service_url(self):
         return (
